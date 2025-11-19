@@ -1,0 +1,72 @@
+[[ops]]
+name = "dynamo_node"
+lib_name = "dynamo_new"
+
+[[ops]]
+name = "dynamo_bench_client"
+lib_name = "dynamo_new"
+
+[[nodes]]
+name = "node1"
+hostname = "0.0.0.0"
+port = 3000
+
+[placement]
+  # Spawn 5 Dynamo nodes
+  [[placement.dynamo_node]]
+  nodename = "node1"
+  actor_name = "nodeA"
+  node_id = "nodeA"
+  nodes = ["nodeA","nodeB","nodeC","nodeD","nodeE"]
+  N = 3
+  W = 2
+  R = 2
+  T = 10
+
+  [[placement.dynamo_node]]
+  nodename = "node1"
+  actor_name = "nodeB"
+  node_id = "nodeB"
+  nodes = ["nodeA","nodeB","nodeC","nodeD","nodeE"]
+  N = 3
+  W = 2
+  R = 2
+  T = 10
+
+  [[placement.dynamo_node]]
+  nodename = "node1"
+  actor_name = "nodeC"
+  node_id = "nodeC"
+  nodes = ["nodeA","nodeB","nodeC","nodeD","nodeE"]
+  N = 3
+  W = 2
+  R = 2
+  T = 10
+
+  [[placement.dynamo_node]]
+  nodename = "node1"
+  actor_name = "nodeD"
+  node_id = "nodeD"
+  nodes = ["nodeA","nodeB","nodeC","nodeD","nodeE"]
+  N = 3
+  W = 2
+  R = 2
+  T = 10
+
+  [[placement.dynamo_node]]
+  nodename = "node1"
+  actor_name = "nodeE"
+  node_id = "nodeE"
+  nodes = ["nodeA","nodeB","nodeC","nodeD","nodeE"]
+  N = 3
+  W = 2
+  R = 2
+  T = 10
+
+  # Benchmark client - runs 1000 operations and measures latency
+  [[placement.dynamo_bench_client]]
+  nodename = "node1"
+  actor_name = "bench_client1"
+  client_id = "bench_client1"
+  nodes = ["nodeA","nodeB","nodeC","nodeD","nodeE"]
+  num_ops = 1000

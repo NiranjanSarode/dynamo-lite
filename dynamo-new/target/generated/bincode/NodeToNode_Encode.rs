@@ -76,6 +76,20 @@ impl :: bincode :: Encode for NodeToNode
                 ; :: bincode :: Encode :: encode(from, encoder) ?; :: bincode
                 :: Encode :: encode(to, encoder) ?; core :: result :: Result
                 :: Ok(())
+            }, Self ::AddNode { from, to, new_node }
+            =>{
+                < u32 as :: bincode :: Encode >:: encode(& (9u32), encoder) ?
+                ; :: bincode :: Encode :: encode(from, encoder) ?; :: bincode
+                :: Encode :: encode(to, encoder) ?; :: bincode :: Encode ::
+                encode(new_node, encoder) ?; core :: result :: Result ::
+                Ok(())
+            }, Self ::AddNodeAck { from, to, new_node }
+            =>{
+                < u32 as :: bincode :: Encode >:: encode(& (10u32), encoder) ?
+                ; :: bincode :: Encode :: encode(from, encoder) ?; :: bincode
+                :: Encode :: encode(to, encoder) ?; :: bincode :: Encode ::
+                encode(new_node, encoder) ?; core :: result :: Result ::
+                Ok(())
             },
         }
     }

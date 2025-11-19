@@ -82,12 +82,26 @@ impl < __Context > :: bincode :: Decode < __Context > for NodeToNode
                 from : :: bincode :: Decode ::< __D :: Context >::
                 decode(decoder) ?, to : :: bincode :: Decode ::< __D ::
                 Context >:: decode(decoder) ?,
+            }), 9u32 =>core :: result :: Result ::
+            Ok(Self ::AddNode
+            {
+                from : :: bincode :: Decode ::< __D :: Context >::
+                decode(decoder) ?, to : :: bincode :: Decode ::< __D ::
+                Context >:: decode(decoder) ?, new_node : :: bincode :: Decode
+                ::< __D :: Context >:: decode(decoder) ?,
+            }), 10u32 =>core :: result :: Result ::
+            Ok(Self ::AddNodeAck
+            {
+                from : :: bincode :: Decode ::< __D :: Context >::
+                decode(decoder) ?, to : :: bincode :: Decode ::< __D ::
+                Context >:: decode(decoder) ?, new_node : :: bincode :: Decode
+                ::< __D :: Context >:: decode(decoder) ?,
             }), variant =>core :: result :: Result ::
             Err(:: bincode :: error :: DecodeError :: UnexpectedVariant
             {
                 found : variant, type_name : "NodeToNode", allowed : &::
                 bincode :: error :: AllowedEnumVariants :: Range
-                { min: 0, max: 8 }
+                { min: 0, max: 10 }
             })
         }
     }
@@ -183,12 +197,28 @@ for NodeToNode
                 from : :: bincode :: BorrowDecode ::< __D :: Context >::
                 borrow_decode(decoder) ?, to : :: bincode :: BorrowDecode ::<
                 __D :: Context >:: borrow_decode(decoder) ?,
+            }), 9u32 =>core :: result :: Result ::
+            Ok(Self ::AddNode
+            {
+                from : :: bincode :: BorrowDecode ::< __D :: Context >::
+                borrow_decode(decoder) ?, to : :: bincode :: BorrowDecode ::<
+                __D :: Context >:: borrow_decode(decoder) ?, new_node : ::
+                bincode :: BorrowDecode ::< __D :: Context >::
+                borrow_decode(decoder) ?,
+            }), 10u32 =>core :: result :: Result ::
+            Ok(Self ::AddNodeAck
+            {
+                from : :: bincode :: BorrowDecode ::< __D :: Context >::
+                borrow_decode(decoder) ?, to : :: bincode :: BorrowDecode ::<
+                __D :: Context >:: borrow_decode(decoder) ?, new_node : ::
+                bincode :: BorrowDecode ::< __D :: Context >::
+                borrow_decode(decoder) ?,
             }), variant =>core :: result :: Result ::
             Err(:: bincode :: error :: DecodeError :: UnexpectedVariant
             {
                 found : variant, type_name : "NodeToNode", allowed : &::
                 bincode :: error :: AllowedEnumVariants :: Range
-                { min: 0, max: 8 }
+                { min: 0, max: 10 }
             })
         }
     }

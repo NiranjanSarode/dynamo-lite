@@ -1,10 +1,11 @@
-mod messages;
+pub mod messages;
 pub mod vector_clock;
 pub mod versioned_value;
-mod consistent_hash;
-mod node;
+pub mod consistent_hash;
+pub mod node;
 mod client;
 mod cart_client;
+mod bench_client;
 
 pub use reactor_actor::setup_shared_logger_ref;
 
@@ -98,4 +99,13 @@ fn dynamo_cart_client(ctx: RuntimeCtx, mut payload: HashMap<String, serde_json::
     let steps: Vec<CartStep> = payload.remove("script").and_then(|v| serde_json::from_value(v).ok()).unwrap_or_else(Vec::new);
     log::info!("[cart-init] {} steps={} first={:?}", client_id, steps.len(), steps.get(0));
     RUNTIME.spawn(cart_client::cart_client_behaviour(ctx, client_id, nodes, steps, dynamo_client_decoder));
+}
+
+#[actor]
+fn dynamo_bench_client(ctx: RuntimeCtx, mut payload: HashMap<String, serde_json::Value>) {
+    let client_id = payload.remove("client_id").and_then(|v| v.as_str().map(|s| s.to_string())).unwrap_or_else(|| ctx.addr.to_string());
+    let nodes: Vec<String> = payload.remove("nodes").and_then(|v| serde_json::from_value(v).ok()).unwrap_or_else(Vec::new);
+    let num_ops = payload.remove("num_ops").and_then(|v| v.as_u64()).unwrap_or(1000) as usize;
+    log::info!("[bench-init] {} running {} operations", client_id, num_ops);
+    RUNTIME.spawn(bench_client::bench_client_behaviour(ctx, client_id, nodes, num_ops, dynamo_client_decoder));
 }

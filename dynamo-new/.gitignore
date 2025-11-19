@@ -1,0 +1,23 @@
+# Build artifacts
+target/
+Cargo.lock
+
+# Latency testing
+latency.log
+latency_*.png
+sample_latency.log
+latency_configs.log
+latency_timeseries.log
+latency_buffered_comparison.log
+latency_imbalance.log
+latency_realtime.log
+load_distribution.log
+graph_*.png
+
+# Test artifacts
+test_latency.log
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo

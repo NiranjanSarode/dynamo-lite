@@ -246,6 +246,61 @@ impl DynamoNode {
         }
         vec![]
     }
+
+    fn on_add_node(&mut self, from: String, new_node: String) -> Vec<DynamoNodeOut> {
+        // Check if node already exists
+        if self.nodes.contains(&new_node) {
+            warn!("[add-node] node={} ignoring duplicate add_node request for {}", self.node_id, new_node);
+            return vec![DynamoNodeOut::NodeToNode(NodeToNode::AddNodeAck{ from: self.node_id.clone(), to: from, new_node })];
+        }
+
+        info!("[add-node] node={} adding new_node={} to cluster (current_size={})", self.node_id, new_node, self.nodes.len());
+
+        // Add to nodes list
+        self.nodes.push(new_node.clone());
+
+        // Update consistent hash ring
+        self.ring.add_node(&new_node, self.t);
+
+        // Remove from failed set if present
+        self.failed.remove(&new_node);
+
+        // Redistribute data: for each key, check if new node should now own it
+        let mut redistribution_msgs = vec![];
+        let keys_to_check: Vec<String> = self.store.keys().cloned().collect();
+
+        for key in keys_to_check {
+            let (pref, _) = self.ring.find_nodes(&key, self.n, &[]);
+
+            // If new node is now in preference list, send it the data
+            if pref.contains(&new_node) {
+                if let Some(vs) = self.store.get(&key) {
+                    for v in &vs.versions {
+                        redistribution_msgs.push(DynamoNodeOut::NodeToNode(NodeToNode::PutReq{
+                            from: self.node_id.clone(),
+                            to: new_node.clone(),
+                            key: key.clone(),
+                            value: v.value.clone(),
+                            clock: v.clock.clone(),
+                            msg_id: 0,
+                            handoff: None
+                        }));
+                    }
+                }
+            }
+        }
+
+        info!("[add-node] node={} redistributing {} keys to new_node={}",
+              self.node_id, redistribution_msgs.len(), new_node);
+
+        let mut out = vec![DynamoNodeOut::NodeToNode(NodeToNode::AddNodeAck{
+            from: self.node_id.clone(),
+            to: from,
+            new_node
+        })];
+        out.extend(redistribution_msgs);
+        out
+    }
 }
 
 impl ActorProcess for DynamoNode {
@@ -303,7 +358,7 @@ impl ActorProcess for DynamoNode {
                     vec![]
                 },
                 NodeToNode::PingReq{ from, to:_ } => vec![DynamoNodeOut::NodeToNode(NodeToNode::PingRsp{ from: self.node_id.clone(), to: from })],
-                NodeToNode::PingRsp{ from, to:_ } => { 
+                NodeToNode::PingRsp{ from, to:_ } => {
                     // recovered
                     self.failed.remove(&from);
                     if let Some(keys) = self.handoffs.remove(&from) {
@@ -316,6 +371,11 @@ impl ActorProcess for DynamoNode {
                         }}
                         msgs
                     } else { vec![] }
+                },
+                NodeToNode::AddNode{ from, to:_, new_node } => self.on_add_node(from, new_node),
+                NodeToNode::AddNodeAck{ from, to:_, new_node } => {
+                    info!("[add-node-ack] node={} received ack from {} for new_node={}", self.node_id, from, new_node);
+                    vec![]
                 },
             },
         };
@@ -344,6 +404,8 @@ impl ActorSend for DynamoNodeSender {
                     NodeToNode::SyncKey{ to, .. } => RouteTo::from(to.clone()),
                     NodeToNode::PingReq{ to, .. } => RouteTo::from(to.clone()),
                     NodeToNode::PingRsp{ to, .. } => RouteTo::from(to.clone()),
+                    NodeToNode::AddNode{ to, .. } => RouteTo::from(to.clone()),
+                    NodeToNode::AddNodeAck{ to, .. } => RouteTo::from(to.clone()),
                 }
             }
             DynamoNodeOut::NodeToClient(c) => {

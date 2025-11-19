@@ -30,7 +30,6 @@ impl ConsistentHash {
     }
 
     pub fn find_nodes(&self, key: &str, count: usize, avoid: &[String]) -> (Vec<String>, Vec<String>) {
-        use std::cmp::Ordering;
         let keyh = md5_bytes(key);
         // binary search
         let idx = match self.hashes.binary_search_by(|probe| probe.cmp(&keyh)) {
@@ -53,5 +52,29 @@ impl ConsistentHash {
             if i == idx { break; }
         }
         (results, avoided)
+    }
+
+    /// Add a new node to the consistent hash ring
+    pub fn add_node(&mut self, node: &str, repeat: usize) {
+        let mut new_entries: Vec<([u8; 16], String)> = Vec::new();
+        for i in 0..repeat {
+            let s = format!("{}:{}", node, i);
+            new_entries.push((md5_bytes(&s), node.to_string()));
+        }
+        // Add new entries and re-sort the ring
+        self.ring.extend(new_entries);
+        self.ring.sort_by(|a, b| a.0.cmp(&b.0));
+        self.hashes = self.ring.iter().map(|(h, _)| *h).collect();
+    }
+
+    /// Get all unique nodes in the ring
+    pub fn get_nodes(&self) -> Vec<String> {
+        let mut nodes: Vec<String> = self.ring.iter()
+            .map(|(_, n)| n.clone())
+            .collect::<std::collections::HashSet<_>>()
+            .into_iter()
+            .collect();
+        nodes.sort();
+        nodes
     }
 }

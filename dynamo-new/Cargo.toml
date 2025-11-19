@@ -8,6 +8,10 @@ edition = "2024"
 name = "dynamo_new"
 crate-type = ["cdylib", "rlib"]
 
+[[bin]]
+name = "real_benchmark"
+path = "src/bin/real_benchmark.rs"
+
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 bincode = { version = "2.0.0", features = ["serde"] }

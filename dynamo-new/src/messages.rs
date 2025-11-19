@@ -36,6 +36,10 @@ pub enum NodeToNode {
 
     PingReq { from: String, to: String },
     PingRsp { from: String, to: String },
+
+    // Dynamic membership: add a new node to the cluster
+    AddNode { from: String, to: String, new_node: String },
+    AddNodeAck { from: String, to: String, new_node: String },
 }
 
 msg_converter! {
